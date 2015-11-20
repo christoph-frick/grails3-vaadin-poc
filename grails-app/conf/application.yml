@@ -8,10 +8,35 @@ info:
         name: '@info.app.name@'
         version: '@info.app.version@'
         grailsVersion: '@info.app.grailsVersion@'
+
+app:
+  vaadin:
+    widgetset: 'g309'
+    productionMode: "true" # must be string!
+
 spring:
     groovy:
         template:
             check-template-location: false
+
+vaadin:
+  servlet:
+    urlMapping: /ui/*
+    params:
+      productionMode: "${app.vaadin.productionMode}"
+      widgetset: "${app.vaadin.widgetset}"
+  # see https://github.com/peholmst/vaadin4spring/issues/108#issuecomment-69953039
+  static:
+    servlet:
+      params:
+        productionMode: "${app.vaadin.productionMode}"
+
+# FIXME: does not work, development is production=true when running bootRun
+environments:
+   development:
+     app:
+      vaadin:
+        productionMode: "false" # must be string
 
 ---
 grails:

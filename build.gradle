@@ -1,6 +1,7 @@
 buildscript {
     ext {
         grailsVersion = project.grailsVersion
+        gradleVaadinPluginVersion = '0.10.2'
     }
     repositories {
         mavenLocal()
@@ -10,6 +11,7 @@ buildscript {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath 'com.bertramlabs.plugins:asset-pipeline-gradle:2.5.0'
         classpath "org.grails.plugins:hibernate:4.3.10.5"
+        classpath "fi.jasoft.plugin:gradle-vaadin-plugin:$gradleVaadinPluginVersion"
     }
 }
 
@@ -27,11 +29,17 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: "org.grails.grails-web"
 apply plugin: "org.grails.grails-gsp"
+apply plugin: 'fi.jasoft.plugin.vaadin'
 
 ext {
     grailsVersion = project.grailsVersion
     gradleWrapperVersion = project.gradleWrapperVersion
+    vaadinVersion = '7.5.9'
+    vaadin4springVersion = '0.0.5.RELEASE'
 }
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 assets {
     minifyJs = true
@@ -50,11 +58,49 @@ dependencyManagement {
     applyMavenExclusions false
 }
 
+vaadin {
+	vaadin.version = vaadinVersion
+	widgetset jar.baseName
+	// debug is managed by vaadin4spring
+	vaadin.debug = false
+	// in 0.9.6 (fixed in 0.9.7) vaadin 7.4 made problems due to opera target
+	vaadin.manageWidgetset = false
+	// we manage repos ourself (failed with gradle 2.1 and 0.8 of the plugin)
+	vaadin.manageRepositories = false
+	// bend the directory to compile the themes into the build dir
+	vaadin.plugin.themesDirectory = 'build/resources/main/VAADIN/themes/'
+	// bend the directory to compile the widgetset into the build dir
+	vaadin.gwt.outputDirectory = file('build/resources/main/')
+}
+
+// pull in vaadin tasks several of the springboot tasks shall depend on
+jar {
+	dependsOn vaadinCompileWidgetset, vaadinCompileThemes
+}
+bootRun {
+	dependsOn vaadinCompileWidgetset, vaadinCompileThemes
+}
+
+// must be done last, so both plugins setup their stuff already
+project.afterEvaluate {
+	// get the runtime vaadin libs into the jar
+	jar {
+		into('lib') {
+			from configurations.vaadin
+		}
+	}
+	// pickup the runtime vaadin libs for bootRun
+	bootRun {
+		classpath += configurations.vaadin
+	}
+}
+
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-logging"
     compile "org.springframework.boot:spring-boot-starter-actuator"
     compile "org.springframework.boot:spring-boot-autoconfigure"
     compile "org.springframework.boot:spring-boot-starter-tomcat"
+    compile("org.vaadin.spring:spring-boot-vaadin:${vaadin4springVersion}") { exclude group: 'com.vaadin' }
     compile "org.grails:grails-dependencies"
     compile "org.grails:grails-web-boot"
 
@@ -74,6 +120,18 @@ dependencies {
     console "org.grails:grails-console"
 }
 
+// Exclude all deps, that pull in newer versions of the critical libraries for
+// widgetset compilation here (e.g. validation-api).  If there are errors
+// building the widgetset, check with `./gradlew dependencies` first.
+configurations {
+	'vaadin-client' {
+		exclude module: 'spring-boot-starter-web'
+		exclude module: 'spring-boot-vaadin'
+	}
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = gradleWrapperVersion
 }
+
+
