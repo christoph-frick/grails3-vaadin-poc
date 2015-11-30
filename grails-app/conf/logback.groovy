@@ -10,6 +10,7 @@ appender('STDOUT', ConsoleAppender) {
 
 root(ERROR, ['STDOUT'])
 logger("org.vaadin.spring.servlet", DEBUG)
+logger("g309", DEBUG)
 
 def targetDir = BuildSettings.TARGET_DIR
 if (Environment.isDevelopmentMode() && targetDir) {
