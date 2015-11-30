@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 @Service
 @VaadinUIScope
-class PerSessionCounterService {
+class PerSessionCounterService implements ICount {
 
     private AtomicLong counter = new AtomicLong(0)
 

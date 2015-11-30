@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.atomic.AtomicLong
 
 @Service
-class GlobalCounterService {
+class GlobalCounterService implements ICount {
 
     private AtomicLong counter = new AtomicLong(0)
 
