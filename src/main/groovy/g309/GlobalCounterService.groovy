@@ -1,10 +1,13 @@
 package g309
+
+import groovy.util.logging.Slf4j
 import org.springframework.stereotype.Service
 
 import java.util.concurrent.atomic.AtomicLong
 
 @Service
-class GlobalCounterService implements ICount {
+@Slf4j
+class GlobalCounterService implements ICount, LogInitAndDestroy {
 
     private AtomicLong counter = new AtomicLong(0)
 

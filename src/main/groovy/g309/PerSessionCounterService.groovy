@@ -1,5 +1,6 @@
 package g309
 
+import groovy.util.logging.Slf4j
 import org.springframework.stereotype.Service
 import org.vaadin.spring.annotation.VaadinUIScope
 
@@ -7,7 +8,8 @@ import java.util.concurrent.atomic.AtomicLong
 
 @Service
 @VaadinUIScope
-class PerSessionCounterService implements ICount {
+@Slf4j
+class PerSessionCounterService implements ICount, LogInitAndDestroy {
 
     private AtomicLong counter = new AtomicLong(0)
 
