@@ -22,21 +22,16 @@ class AdminUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
+        def bb = { ICount counter ->
+            new Button(counter.get().toString()).with{
+                addClickListener({
+                    caption = counter.inc().toString()
+                })
+                it
+            }
+        }
         setContent(
-                new VerticalLayout(
-                        new Button(globalCounterService.get().toString()).with{
-                            addClickListener({
-                                caption = globalCounterService.inc().toString()
-                            })
-                            it
-                        },
-                        new Button(perSessionCounterService.get().toString()).with{
-                            addClickListener({
-                                caption = perSessionCounterService.inc().toString()
-                            })
-                            it
-                        }
-                )
+                new VerticalLayout(bb(globalCounterService), bb(perSessionCounterService))
         )
     }
 }
